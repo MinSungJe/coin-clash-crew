@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,30 +15,51 @@ interface TradingPanelProps {
 
 const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, onTrade }) => {
   const [tradeAmount, setTradeAmount] = useState<number>(0);
+  const [tradeValue, setTradeValue] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
+  const [tradeMode, setTradeMode] = useState<'amount' | 'value'>('amount'); // 새로운 상태
 
-  const maxBuyAmount = Math.floor(portfolio.cash / selectedCoin.price * 100000) / 100000; // 소수점 5자리
+  const maxBuyAmount = Math.floor(portfolio.cash / selectedCoin.price * 100000) / 100000;
   const maxSellAmount = portfolio.holdings[selectedCoin.symbol] || 0;
+  const maxBuyValue = portfolio.cash;
+  const maxSellValue = maxSellAmount * selectedCoin.price;
   
   const maxAmount = tradeType === 'buy' ? maxBuyAmount : maxSellAmount;
-  const tradeValue = tradeAmount * selectedCoin.price;
+  const maxValue = tradeType === 'buy' ? maxBuyValue : maxSellValue;
+  const calculatedTradeValue = tradeAmount * selectedCoin.price;
+  const calculatedTradeAmount = tradeValue / selectedCoin.price;
 
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
-    const amount = (maxAmount * percentage) / 100;
-    setTradeAmount(Math.floor(amount * 100000) / 100000);
+    
+    if (tradeMode === 'amount') {
+      const amount = (maxAmount * percentage) / 100;
+      setTradeAmount(Math.floor(amount * 100000) / 100000);
+    } else {
+      const value = (maxValue * percentage) / 100;
+      setTradeValue(Math.round(value));
+    }
   };
 
   const handleTrade = () => {
-    if (tradeAmount <= 0 || tradeAmount > maxAmount) return;
+    let finalAmount: number;
+    
+    if (tradeMode === 'amount') {
+      if (tradeAmount <= 0 || tradeAmount > maxAmount) return;
+      finalAmount = tradeAmount;
+    } else {
+      if (tradeValue <= 0 || tradeValue > maxValue) return;
+      finalAmount = calculatedTradeAmount;
+    }
     
     onTrade({
       type: tradeType,
       symbol: selectedCoin.symbol,
-      amount: tradeAmount
+      amount: finalAmount
     });
     
     setTradeAmount(0);
+    setTradeValue(0);
   };
 
   const formatPrice = (price: number) => {
@@ -49,6 +71,28 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
       return amount.toFixed(2);
     }
     return amount.toFixed(5);
+  };
+
+  const getCurrentValue = () => {
+    if (tradeMode === 'amount') {
+      return calculatedTradeValue;
+    }
+    return tradeValue;
+  };
+
+  const getCurrentAmount = () => {
+    if (tradeMode === 'amount') {
+      return tradeAmount;
+    }
+    return calculatedTradeAmount;
+  };
+
+  const isValidTrade = () => {
+    if (tradeMode === 'amount') {
+      return tradeAmount > 0 && tradeAmount <= maxAmount;
+    } else {
+      return tradeValue > 0 && tradeValue <= maxValue;
+    }
   };
 
   return (
@@ -80,6 +124,32 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
           </Button>
         </div>
 
+        {/* Trade Mode Toggle */}
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setTradeMode('amount')}
+            className={`flex-1 ${
+              tradeMode === 'amount'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+            }`}
+            size="sm"
+          >
+            수량 기준
+          </Button>
+          <Button
+            onClick={() => setTradeMode('value')}
+            className={`flex-1 ${
+              tradeMode === 'value'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+            }`}
+            size="sm"
+          >
+            금액 기준
+          </Button>
+        </div>
+
         {/* Current Holdings */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
@@ -92,18 +162,35 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
           </div>
         </div>
 
-        {/* Amount Input */}
+        {/* Input Section */}
         <div className="space-y-3">
-          <label className="text-white text-sm">거래 수량</label>
-          <Input
-            type="number"
-            value={tradeAmount}
-            onChange={(e) => setTradeAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-            placeholder="0.00000"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            step="0.00001"
-            max={maxAmount}
-          />
+          {tradeMode === 'amount' ? (
+            <>
+              <label className="text-white text-sm">거래 수량</label>
+              <Input
+                type="number"
+                value={tradeAmount}
+                onChange={(e) => setTradeAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                placeholder="0.00000"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                step="0.00001"
+                max={maxAmount}
+              />
+            </>
+          ) : (
+            <>
+              <label className="text-white text-sm">거래 금액</label>
+              <Input
+                type="number"
+                value={tradeValue}
+                onChange={(e) => setTradeValue(Math.max(0, parseInt(e.target.value) || 0))}
+                placeholder="0"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                step="1"
+                max={maxValue}
+              />
+            </>
+          )}
           
           {/* Percentage Slider */}
           <div className="space-y-2">
@@ -115,7 +202,11 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
               <span>100%</span>
             </div>
             <Slider
-              value={[maxAmount > 0 ? (tradeAmount / maxAmount) * 100 : 0]}
+              value={[
+                tradeMode === 'amount' 
+                  ? (maxAmount > 0 ? (tradeAmount / maxAmount) * 100 : 0)
+                  : (maxValue > 0 ? (tradeValue / maxValue) * 100 : 0)
+              ]}
               onValueChange={handleSliderChange}
               max={100}
               step={1}
@@ -123,12 +214,18 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
             />
           </div>
 
-          {/* Quick Amount Buttons */}
+          {/* Quick Percentage Buttons */}
           <div className="flex gap-2">
             {[25, 50, 75, 100].map(percent => (
               <Button
                 key={percent}
-                onClick={() => setTradeAmount(Math.floor((maxAmount * percent / 100) * 100000) / 100000)}
+                onClick={() => {
+                  if (tradeMode === 'amount') {
+                    setTradeAmount(Math.floor((maxAmount * percent / 100) * 100000) / 100000);
+                  } else {
+                    setTradeValue(Math.round(maxValue * percent / 100));
+                  }
+                }}
                 variant="outline"
                 size="sm"
                 className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs"
@@ -142,8 +239,12 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
         {/* Trade Summary */}
         <div className="space-y-2 p-4 bg-white/5 rounded-lg">
           <div className="flex justify-between text-sm">
+            <span className="text-white/70">거래 수량</span>
+            <span className="text-white font-mono">{formatAmount(getCurrentAmount())}</span>
+          </div>
+          <div className="flex justify-between text-sm">
             <span className="text-white/70">거래 금액</span>
-            <span className="text-white font-mono">₩{formatPrice(tradeValue)}</span>
+            <span className="text-white font-mono">₩{formatPrice(getCurrentValue())}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-white/70">현재 가격</span>
@@ -154,7 +255,7 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
         {/* Trade Button */}
         <Button
           onClick={handleTrade}
-          disabled={tradeAmount <= 0 || tradeAmount > maxAmount}
+          disabled={!isValidTrade()}
           className={`w-full py-3 text-lg font-semibold ${
             tradeType === 'buy'
               ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
@@ -165,7 +266,7 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
         </Button>
 
         {/* Insufficient Funds Warning */}
-        {tradeAmount > maxAmount && (
+        {!isValidTrade() && (getCurrentAmount() > 0 || getCurrentValue() > 0) && (
           <p className="text-red-400 text-sm text-center">
             {tradeType === 'buy' ? '보유 현금이 부족합니다' : '보유량이 부족합니다'}
           </p>
