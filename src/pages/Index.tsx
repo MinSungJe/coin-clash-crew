@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -150,6 +149,11 @@ const Index = () => {
 
   const profitLoss = calculateTotalValue() - 10000;
   const profitLossPercent = (profitLoss / 10000) * 100;
+  
+  const currentPrices = coins.reduce((acc, coin) => {
+    acc[coin.symbol] = coin.price;
+    return acc;
+  }, {} as { [key: string]: number });
 
   if (gameState === 'waiting') {
     return (
@@ -228,6 +232,7 @@ const Index = () => {
           totalValue={calculateTotalValue()}
           profitLoss={profitLoss}
           profitLossPercent={profitLossPercent}
+          currentPrices={currentPrices}
         />
 
         {/* Main Trading Interface */}

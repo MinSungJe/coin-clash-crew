@@ -17,7 +17,7 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
   const [tradeAmount, setTradeAmount] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
 
-  const maxBuyAmount = Math.floor(portfolio.cash / selectedCoin.price * 100) / 100; // 소수점 2자리
+  const maxBuyAmount = Math.floor(portfolio.cash / selectedCoin.price * 100000) / 100000; // 소수점 5자리
   const maxSellAmount = portfolio.holdings[selectedCoin.symbol] || 0;
   
   const maxAmount = tradeType === 'buy' ? maxBuyAmount : maxSellAmount;
@@ -26,7 +26,7 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
     const amount = (maxAmount * percentage) / 100;
-    setTradeAmount(Math.floor(amount * 100) / 100);
+    setTradeAmount(Math.floor(amount * 100000) / 100000);
   };
 
   const handleTrade = () => {
@@ -43,6 +43,13 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ko-KR').format(Math.round(price));
+  };
+
+  const formatAmount = (amount: number) => {
+    if (amount >= 1) {
+      return amount.toFixed(2);
+    }
+    return amount.toFixed(5);
   };
 
   return (
@@ -82,7 +89,7 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-white/70">{selectedCoin.name} 보유량</span>
-            <span className="text-white font-mono">{maxSellAmount.toFixed(4)}</span>
+            <span className="text-white font-mono">{formatAmount(maxSellAmount)}</span>
           </div>
         </div>
 
@@ -93,9 +100,9 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
             type="number"
             value={tradeAmount}
             onChange={(e) => setTradeAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-            placeholder="0.00"
+            placeholder="0.00000"
             className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            step="0.01"
+            step="0.00001"
             max={maxAmount}
           />
           
@@ -122,7 +129,7 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
             {[25, 50, 75, 100].map(percent => (
               <Button
                 key={percent}
-                onClick={() => setTradeAmount(Math.floor((maxAmount * percent / 100) * 100) / 100)}
+                onClick={() => setTradeAmount(Math.floor((maxAmount * percent / 100) * 100000) / 100000)}
                 variant="outline"
                 size="sm"
                 className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs"
