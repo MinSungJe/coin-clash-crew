@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# 🪙 코인 모의 투자 서비스 by Lovable
 
 ## Project info
 
