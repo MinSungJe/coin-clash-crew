@@ -1,4 +1,4 @@
-# 🪙 코인 모의 투자 서비스 by Lovable
+# 🪙 [코인 모의 투자 서비스 by Lovable](https://preview--coin-clash-crew.lovable.app/)
 
 ## 페르소나
 
