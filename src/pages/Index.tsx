@@ -32,7 +32,7 @@ export interface Portfolio {
 
 const Index = () => {
   const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
   const [selectedCoin, setSelectedCoin] = useState('BTC');
   
   const [portfolio, setPortfolio] = useState<Portfolio>({
@@ -111,7 +111,7 @@ const Index = () => {
 
   const startGame = () => {
     setGameState('playing');
-    setTimeLeft(300);
+    setTimeLeft(120);
     // Initialize chart data
     const now = Date.now();
     setCoins(prevCoins =>
@@ -124,7 +124,7 @@ const Index = () => {
 
   const resetGame = () => {
     setGameState('waiting');
-    setTimeLeft(300);
+    setTimeLeft(120);
     setPortfolio({
       cash: 10000,
       holdings: { BTC: 0, ETH: 0, DOGE: 0 },
@@ -168,7 +168,7 @@ const Index = () => {
             
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-white">코인 배틀</h1>
-              <p className="text-blue-200">친구들과 5분 투자 승부!</p>
+              <p className="text-blue-200">친구들과 2분 투자 승부!</p>
             </div>
 
             <div className="space-y-4 text-left text-sm text-blue-100">
@@ -178,7 +178,7 @@ const Index = () => {
               </div>
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-4 h-4" />
-                <span>제한 시간: 5분</span>
+                <span>제한 시간: 2분</span>
               </div>
               <div className="flex items-center gap-3">
                 <Trophy className="w-4 h-4" />
