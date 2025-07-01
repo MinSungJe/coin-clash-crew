@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import GameTimer from '@/components/GameTimer';
 import CryptoChart from '@/components/CryptoChart';
 import TradingPanel from '@/components/TradingPanel';
 import Portfolio from '@/components/Portfolio';
 import GameResults from '@/components/GameResults';
-import { TrendingUp, Users, Trophy, Coffee } from 'lucide-react';
+import { TrendingUp, Users, Trophy, Coffee, Clock } from 'lucide-react';
 
 export interface CoinData {
   symbol: string;
@@ -32,7 +33,8 @@ export interface Portfolio {
 
 const Index = () => {
   const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
+  const [selectedDuration, setSelectedDuration] = useState(120); // Default 2 minutes
+  const [timeLeft, setTimeLeft] = useState(120);
   const [selectedCoin, setSelectedCoin] = useState('BTC');
   
   const [portfolio, setPortfolio] = useState<Portfolio>({
@@ -111,7 +113,7 @@ const Index = () => {
 
   const startGame = () => {
     setGameState('playing');
-    setTimeLeft(120);
+    setTimeLeft(selectedDuration);
     // Initialize chart data
     const now = Date.now();
     setCoins(prevCoins =>
@@ -124,7 +126,7 @@ const Index = () => {
 
   const resetGame = () => {
     setGameState('waiting');
-    setTimeLeft(120);
+    setTimeLeft(selectedDuration);
     setPortfolio({
       cash: 10000,
       holdings: { BTC: 0, ETH: 0, DOGE: 0 },
@@ -155,6 +157,13 @@ const Index = () => {
     return acc;
   }, {} as { [key: string]: number });
 
+  const timeOptions = [
+    { value: 60, label: '1분', description: '빠른 승부' },
+    { value: 120, label: '2분', description: '기본 모드' },
+    { value: 180, label: '3분', description: '여유있게' },
+    { value: 300, label: '5분', description: '심화 모드' }
+  ];
+
   if (gameState === 'waiting') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
@@ -168,17 +177,44 @@ const Index = () => {
             
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-white">코인 배틀</h1>
-              <p className="text-blue-200">친구들과 2분 투자 승부!</p>
+              <p className="text-blue-200">친구들과 투자 승부!</p>
+            </div>
+
+            {/* Time Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-2 text-white">
+                <Clock className="w-4 h-4" />
+                <span className="font-semibold">게임 시간 선택</span>
+              </div>
+              
+              <RadioGroup 
+                value={selectedDuration.toString()} 
+                onValueChange={(value) => setSelectedDuration(parseInt(value))}
+                className="grid grid-cols-2 gap-3"
+              >
+                {timeOptions.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem 
+                      value={option.value.toString()} 
+                      id={option.value.toString()}
+                      className="border-white/40 text-white data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                    />
+                    <label 
+                      htmlFor={option.value.toString()} 
+                      className="text-sm text-blue-100 cursor-pointer flex flex-col"
+                    >
+                      <span className="font-medium text-white">{option.label}</span>
+                      <span className="text-xs text-blue-300">{option.description}</span>
+                    </label>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
 
             <div className="space-y-4 text-left text-sm text-blue-100">
               <div className="flex items-center gap-3">
                 <Users className="w-4 h-4" />
                 <span>초기 자본: 10,000원</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-4 h-4" />
-                <span>제한 시간: 2분</span>
               </div>
               <div className="flex items-center gap-3">
                 <Trophy className="w-4 h-4" />
@@ -194,7 +230,7 @@ const Index = () => {
               onClick={startGame}
               className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold py-3 text-lg"
             >
-              게임 시작하기
+              {timeOptions.find(opt => opt.value === selectedDuration)?.label} 게임 시작하기
             </Button>
           </div>
         </Card>
