@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Portfolio as PortfolioType, Trade } from '@/pages/Index';
+import { Portfolio as PortfolioType, Trade } from '@/types/GameTypes';
 import { Wallet, TrendingUp, TrendingDown, PieChart, Coins } from 'lucide-react';
 
 interface PortfolioProps {

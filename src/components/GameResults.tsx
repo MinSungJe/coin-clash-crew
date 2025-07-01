@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trade } from '@/pages/Index';
+import { Trade } from '@/types/GameTypes';
 import { Trophy, Coffee, TrendingUp, TrendingDown, RotateCcw, Target } from 'lucide-react';
 
 interface GameResultsProps {

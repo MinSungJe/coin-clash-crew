@@ -1,151 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import GameTimer from '@/components/GameTimer';
+
+import React, { useState } from 'react';
+import WaitingScreen from '@/components/WaitingScreen';
+import GameHeader from '@/components/GameHeader';
 import CryptoChart from '@/components/CryptoChart';
 import TradingPanel from '@/components/TradingPanel';
 import Portfolio from '@/components/Portfolio';
 import GameResults from '@/components/GameResults';
-import { TrendingUp, Users, Trophy, Coffee } from 'lucide-react';
-
-export interface CoinData {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  chartData: { time: number; price: number }[];
-}
-
-export interface Trade {
-  type: 'buy' | 'sell';
-  symbol: string;
-  amount: number;
-  price: number;
-  timestamp: number;
-}
-
-export interface Portfolio {
-  cash: number;
-  holdings: { [key: string]: number };
-  trades: Trade[];
-}
+import { useGameLogic } from '@/hooks/useGameLogic';
 
 const Index = () => {
-  const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
-  const [selectedCoin, setSelectedCoin] = useState('BTC');
+  const [selectedDuration, setSelectedDuration] = useState(120); // Default 2 minutes
   
-  const [portfolio, setPortfolio] = useState<Portfolio>({
-    cash: 10000,
-    holdings: { BTC: 0, ETH: 0, DOGE: 0 },
-    trades: []
-  });
-
-  const [coins, setCoins] = useState<CoinData[]>([
-    {
-      symbol: 'BTC',
-      name: '비트코인',
-      price: 45000000,
-      change: 0,
-      chartData: []
-    },
-    {
-      symbol: 'ETH',
-      name: '이더리움',
-      price: 3200000,
-      change: 0,
-      chartData: []
-    },
-    {
-      symbol: 'DOGE',
-      name: '도지코인',
-      price: 150,
-      change: 0,
-      chartData: []
-    }
-  ]);
-
-  // Mock real-time price updates
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    const interval = setInterval(() => {
-      setCoins(prevCoins => 
-        prevCoins.map(coin => {
-          const changePercent = (Math.random() - 0.5) * 0.1; // ±5% max change
-          const newPrice = coin.price * (1 + changePercent);
-          const newDataPoint = {
-            time: Date.now(),
-            price: newPrice
-          };
-          
-          return {
-            ...coin,
-            price: newPrice,
-            change: changePercent * 100,
-            chartData: [...coin.chartData.slice(-19), newDataPoint] // Keep last 20 points
-          };
-        })
-      );
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [gameState]);
-
-  // Game timer
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          setGameState('finished');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [gameState]);
-
-  const startGame = () => {
-    setGameState('playing');
-    setTimeLeft(120);
-    // Initialize chart data
-    const now = Date.now();
-    setCoins(prevCoins =>
-      prevCoins.map(coin => ({
-        ...coin,
-        chartData: [{ time: now, price: coin.price }]
-      }))
-    );
-  };
-
-  const resetGame = () => {
-    setGameState('waiting');
-    setTimeLeft(120);
-    setPortfolio({
-      cash: 10000,
-      holdings: { BTC: 0, ETH: 0, DOGE: 0 },
-      trades: []
-    });
-    setCoins(prevCoins =>
-      prevCoins.map(coin => ({
-        ...coin,
-        change: 0,
-        chartData: []
-      }))
-    );
-  };
-
-  const calculateTotalValue = () => {
-    const holdingsValue = Object.entries(portfolio.holdings).reduce((total, [symbol, amount]) => {
-      const coin = coins.find(c => c.symbol === symbol);
-      return total + (coin ? coin.price * amount : 0);
-    }, 0);
-    return portfolio.cash + holdingsValue;
-  };
+  const {
+    gameState,
+    timeLeft,
+    selectedCoin,
+    setSelectedCoin,
+    portfolio,
+    coins,
+    startGame,
+    resetGame,
+    calculateTotalValue,
+    handleTrade
+  } = useGameLogic(selectedDuration);
 
   const profitLoss = calculateTotalValue() - 10000;
   const profitLossPercent = (profitLoss / 10000) * 100;
@@ -157,48 +34,11 @@ const Index = () => {
 
   if (gameState === 'waiting') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 text-center bg-white/10 backdrop-blur-lg border-white/20">
-          <div className="space-y-6">
-            <div className="flex justify-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-10 h-10 text-white" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-white">코인 배틀</h1>
-              <p className="text-blue-200">친구들과 2분 투자 승부!</p>
-            </div>
-
-            <div className="space-y-4 text-left text-sm text-blue-100">
-              <div className="flex items-center gap-3">
-                <Users className="w-4 h-4" />
-                <span>초기 자본: 10,000원</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-4 h-4" />
-                <span>제한 시간: 2분</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Trophy className="w-4 h-4" />
-                <span>최고 수익률 승리</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Coffee className="w-4 h-4" />
-                <span>꼴등은 커피 쏘기!</span>
-              </div>
-            </div>
-
-            <Button 
-              onClick={startGame}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold py-3 text-lg"
-            >
-              게임 시작하기
-            </Button>
-          </div>
-        </Card>
-      </div>
+      <WaitingScreen
+        selectedDuration={selectedDuration}
+        onDurationChange={setSelectedDuration}
+        onStartGame={startGame}
+      />
     );
   }
 
@@ -218,13 +58,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-4">
       <div className="max-w-6xl mx-auto space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-green-400" />
-            코인 배틀
-          </h1>
-          <GameTimer timeLeft={timeLeft} />
-        </div>
+        <GameHeader timeLeft={timeLeft} />
 
         {/* Portfolio Overview */}
         <Portfolio 
@@ -251,38 +85,7 @@ const Index = () => {
             <TradingPanel 
               selectedCoin={coins.find(c => c.symbol === selectedCoin)!}
               portfolio={portfolio}
-              onTrade={(trade) => {
-                setPortfolio(prev => {
-                  const coin = coins.find(c => c.symbol === trade.symbol)!;
-                  const tradeValue = trade.amount * coin.price;
-                  
-                  if (trade.type === 'buy') {
-                    if (prev.cash < tradeValue) return prev; // Not enough cash
-                    
-                    return {
-                      ...prev,
-                      cash: prev.cash - tradeValue,
-                      holdings: {
-                        ...prev.holdings,
-                        [trade.symbol]: prev.holdings[trade.symbol] + trade.amount
-                      },
-                      trades: [...prev.trades, { ...trade, price: coin.price, timestamp: Date.now() }]
-                    };
-                  } else {
-                    if (prev.holdings[trade.symbol] < trade.amount) return prev; // Not enough holdings
-                    
-                    return {
-                      ...prev,
-                      cash: prev.cash + tradeValue,
-                      holdings: {
-                        ...prev.holdings,
-                        [trade.symbol]: prev.holdings[trade.symbol] - trade.amount
-                      },
-                      trades: [...prev.trades, { ...trade, price: coin.price, timestamp: Date.now() }]
-                    };
-                  }
-                });
-              }}
+              onTrade={handleTrade}
             />
           </div>
         </div>
