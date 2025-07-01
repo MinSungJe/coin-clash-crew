@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { CoinData, Portfolio, Trade } from '@/pages/Index';
+import { CoinData, Portfolio, Trade } from '@/types/GameTypes';
 import { ShoppingCart, DollarSign } from 'lucide-react';
 
 interface TradingPanelProps {

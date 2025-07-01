@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { CoinData } from '@/pages/Index';
+import { CoinData } from '@/types/GameTypes';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface CryptoChartProps {
