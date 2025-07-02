@@ -28,6 +28,13 @@ export const TIME_OPTIONS = [
   { value: 300, label: '5분', description: '심화 모드' }
 ];
 
+export const INITIAL_CAPITAL_OPTIONS = [
+  { value: 10000, label: '10,000원', description: '기본 모드' },
+  { value: 50000, label: '50,000원', description: '넉넉하게' },
+  { value: 100000, label: '100,000원', description: '큰 손' },
+  { value: 0, label: '직접 입력', description: '원하는 금액' }
+];
+
 export const INITIAL_COINS: CoinData[] = [
   {
     symbol: 'BTC',
@@ -52,8 +59,8 @@ export const INITIAL_COINS: CoinData[] = [
   }
 ];
 
-export const INITIAL_PORTFOLIO: Portfolio = {
-  cash: 10000,
+export const createInitialPortfolio = (initialCapital: number): Portfolio => ({
+  cash: initialCapital,
   holdings: { BTC: 0, ETH: 0, DOGE: 0 },
   trades: []
-};
+});

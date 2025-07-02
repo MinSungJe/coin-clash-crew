@@ -10,6 +10,7 @@ import { useGameLogic } from '@/hooks/useGameLogic';
 
 const Index = () => {
   const [selectedDuration, setSelectedDuration] = useState(120); // Default 2 minutes
+  const [selectedCapital, setSelectedCapital] = useState(10000); // Default 10,000원
   
   const {
     gameState,
@@ -22,10 +23,10 @@ const Index = () => {
     resetGame,
     calculateTotalValue,
     handleTrade
-  } = useGameLogic(selectedDuration);
+  } = useGameLogic(selectedDuration, selectedCapital);
 
-  const profitLoss = calculateTotalValue() - 10000;
-  const profitLossPercent = (profitLoss / 10000) * 100;
+  const profitLoss = calculateTotalValue() - selectedCapital;
+  const profitLossPercent = (profitLoss / selectedCapital) * 100;
   
   const currentPrices = coins.reduce((acc, coin) => {
     acc[coin.symbol] = coin.price;
@@ -37,6 +38,8 @@ const Index = () => {
       <WaitingScreen
         selectedDuration={selectedDuration}
         onDurationChange={setSelectedDuration}
+        selectedCapital={selectedCapital}
+        onCapitalChange={setSelectedCapital}
         onStartGame={startGame}
       />
     );

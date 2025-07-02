@@ -1,13 +1,18 @@
 
 import { useState, useEffect } from 'react';
-import { CoinData, Portfolio, Trade, INITIAL_COINS, INITIAL_PORTFOLIO } from '@/types/GameTypes';
+import { CoinData, Portfolio, Trade, INITIAL_COINS, createInitialPortfolio } from '@/types/GameTypes';
 
-export const useGameLogic = (selectedDuration: number) => {
+export const useGameLogic = (selectedDuration: number, initialCapital: number) => {
   const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
   const [timeLeft, setTimeLeft] = useState(selectedDuration);
   const [selectedCoin, setSelectedCoin] = useState('BTC');
-  const [portfolio, setPortfolio] = useState<Portfolio>(INITIAL_PORTFOLIO);
+  const [portfolio, setPortfolio] = useState<Portfolio>(createInitialPortfolio(initialCapital));
   const [coins, setCoins] = useState<CoinData[]>(INITIAL_COINS);
+
+  // Update portfolio when initialCapital changes
+  useEffect(() => {
+    setPortfolio(createInitialPortfolio(initialCapital));
+  }, [initialCapital]);
 
   // Mock real-time price updates
   useEffect(() => {
@@ -56,6 +61,7 @@ export const useGameLogic = (selectedDuration: number) => {
   const startGame = () => {
     setGameState('playing');
     setTimeLeft(selectedDuration);
+    setPortfolio(createInitialPortfolio(initialCapital));
     // Initialize chart data
     const now = Date.now();
     setCoins(prevCoins =>
@@ -69,7 +75,7 @@ export const useGameLogic = (selectedDuration: number) => {
   const resetGame = () => {
     setGameState('waiting');
     setTimeLeft(selectedDuration);
-    setPortfolio(INITIAL_PORTFOLIO);
+    setPortfolio(createInitialPortfolio(initialCapital));
     setCoins(prevCoins =>
       prevCoins.map(coin => ({
         ...coin,
