@@ -72,6 +72,10 @@ export const useGameLogic = (selectedDuration: number, initialCapital: number) =
     );
   };
 
+  const endGame = () => {
+    setGameState('finished');
+  };
+
   const resetGame = () => {
     setGameState('waiting');
     setTimeLeft(selectedDuration);
@@ -136,6 +140,7 @@ export const useGameLogic = (selectedDuration: number, initialCapital: number) =
     startGame,
     resetGame,
     calculateTotalValue,
-    handleTrade
+    handleTrade,
+    endGame
   };
 };

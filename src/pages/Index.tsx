@@ -22,7 +22,8 @@ const Index = () => {
     startGame,
     resetGame,
     calculateTotalValue,
-    handleTrade
+    handleTrade,
+    endGame
   } = useGameLogic(selectedDuration, selectedCapital);
 
   const profitLoss = calculateTotalValue() - selectedCapital;
@@ -32,6 +33,10 @@ const Index = () => {
     acc[coin.symbol] = coin.price;
     return acc;
   }, {} as { [key: string]: number });
+
+  const handleGiveUp = () => {
+    endGame();
+  };
 
   if (gameState === 'waiting') {
     return (
@@ -61,7 +66,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-4">
       <div className="max-w-6xl mx-auto space-y-4">
         {/* Header */}
-        <GameHeader timeLeft={timeLeft} />
+        <GameHeader timeLeft={timeLeft} onGiveUp={handleGiveUp} />
 
         {/* Portfolio Overview */}
         <Portfolio 
