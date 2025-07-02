@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import WaitingScreen from '@/components/WaitingScreen';
 import GameHeader from '@/components/GameHeader';
@@ -23,7 +22,8 @@ const Index = () => {
     resetGame,
     calculateTotalValue,
     handleTrade,
-    endGame
+    endGame,
+    isGaveUp
   } = useGameLogic(selectedDuration, selectedCapital);
 
   const profitLoss = calculateTotalValue() - selectedCapital;
@@ -58,6 +58,7 @@ const Index = () => {
         profitLossPercent={profitLossPercent}
         trades={portfolio.trades}
         onRestart={resetGame}
+        isGaveUp={isGaveUp}
       />
     );
   }

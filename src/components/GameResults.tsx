@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trade } from '@/types/GameTypes';
-import { Trophy, Coffee, TrendingUp, TrendingDown, RotateCcw, Target } from 'lucide-react';
+import { Trophy, Coffee, TrendingUp, TrendingDown, RotateCcw, Target, Flag } from 'lucide-react';
 
 interface GameResultsProps {
   finalValue: number;
@@ -10,6 +11,7 @@ interface GameResultsProps {
   profitLossPercent: number;
   trades: Trade[];
   onRestart: () => void;
+  isGaveUp: boolean;
 }
 
 const GameResults: React.FC<GameResultsProps> = ({
@@ -17,7 +19,8 @@ const GameResults: React.FC<GameResultsProps> = ({
   profitLoss,
   profitLossPercent,
   trades,
-  onRestart
+  onRestart,
+  isGaveUp
 }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ko-KR').format(Math.round(price));
@@ -31,6 +34,19 @@ const GameResults: React.FC<GameResultsProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl p-8 bg-white/10 backdrop-blur-lg border-white/20">
         <div className="text-center space-y-6">
+          {/* Give Up Notice */}
+          {isGaveUp && (
+            <div className="bg-orange-500/20 border border-orange-400/40 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-center gap-2 text-orange-300">
+                <Flag className="w-5 h-5" />
+                <span className="font-semibold">게임을 기권하셨습니다</span>
+              </div>
+              <p className="text-sm text-orange-200 mt-1">
+                시간이 끝나기 전에 기권하여 현재까지의 결과를 확인하고 있습니다.
+              </p>
+            </div>
+          )}
+
           {/* Result Icon */}
           <div className="flex justify-center">
             {isWinner ? (
@@ -51,10 +67,19 @@ const GameResults: React.FC<GameResultsProps> = ({
           {/* Result Message */}
           <div className="space-y-2">
             <h1 className="text-4xl font-bold text-white">
-              {isWinner ? '🎉 승리!' : isLoser ? '😅 아쉬워요!' : '😐 무난해요!'}
+              {isGaveUp 
+                ? '🏃‍♂️ 기권 완료!' 
+                : isWinner 
+                ? '🎉 승리!' 
+                : isLoser 
+                ? '😅 아쉬워요!' 
+                : '😐 무난해요!'
+              }
             </h1>
             <p className="text-xl text-blue-200">
-              {isWinner 
+              {isGaveUp
+                ? '현재까지의 거래 결과입니다!'
+                : isWinner 
                 ? '친구들에게 커피를 받으세요!'
                 : isLoser 
                 ? '친구들에게 커피를 사야겠네요...'
@@ -131,9 +156,12 @@ const GameResults: React.FC<GameResultsProps> = ({
 
           {/* Fun Message */}
           <p className="text-blue-200 text-sm">
-            친구들과 함께 다시 한 번 도전해보세요! 
-            {isLoser && ' 이번엔 커피값을 아껴볼까요? ☕'}
-            {isWinner && ' 연승 행진을 이어가보세요! 🏆'}
+            {isGaveUp 
+              ? '다음엔 끝까지 도전해보세요! 💪'
+              : '친구들과 함께 다시 한 번 도전해보세요!'
+            }
+            {!isGaveUp && isLoser && ' 이번엔 커피값을 아껴볼까요? ☕'}
+            {!isGaveUp && isWinner && ' 연승 행진을 이어가보세요! 🏆'}
           </p>
         </div>
       </Card>
