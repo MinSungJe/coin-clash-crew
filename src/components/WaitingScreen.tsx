@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { TrendingUp, Users, Trophy, Coffee, Clock, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, Trophy, Coffee, Clock, DollarSign, HelpCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { TIME_OPTIONS, INITIAL_CAPITAL_OPTIONS } from '@/types/GameTypes';
 
 interface WaitingScreenProps {
@@ -66,6 +66,17 @@ const WaitingScreen: React.FC<WaitingScreenProps> = ({
             <h1 className="text-3xl font-bold text-white">코인 배틀</h1>
             <p className="text-blue-200">친구들과 투자 승부!</p>
           </div>
+
+          {/* Tutorial Button */}
+          <Link to="/tutorial">
+            <Button 
+              variant="outline" 
+              className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 mb-4"
+            >
+              <HelpCircle className="w-4 h-4 mr-2" />
+              게임 방법 알아보기
+            </Button>
+          </Link>
 
           {/* Initial Capital Selection */}
           <div className="space-y-4">
