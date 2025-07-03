@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trade } from '@/types/GameTypes';
@@ -27,21 +27,26 @@ const GameResults: React.FC<GameResultsProps> = ({
   selectedCapital
 }) => {
   const { saveGameRecord } = useGameHistory();
+  const savedRef = useRef(false);
 
-  // Save game record when component mounts
+  // Save game record only once when component mounts
   React.useEffect(() => {
-    saveGameRecord({
-      timestamp: Date.now(),
-      duration: selectedDuration,
-      initialCapital: selectedCapital,
-      finalValue,
-      profitLoss,
-      profitLossPercent,
-      trades,
-      isGaveUp,
-      gameEndTime: Date.now()
-    });
-  }, [saveGameRecord, selectedDuration, selectedCapital, finalValue, profitLoss, profitLossPercent, trades, isGaveUp]);
+    if (!savedRef.current) {
+      console.log('Saving game record...');
+      saveGameRecord({
+        timestamp: Date.now(),
+        duration: selectedDuration,
+        initialCapital: selectedCapital,
+        finalValue,
+        profitLoss,
+        profitLossPercent,
+        trades,
+        isGaveUp,
+        gameEndTime: Date.now()
+      });
+      savedRef.current = true;
+    }
+  }, []); // 빈 의존성 배열로 한 번만 실행
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ko-KR').format(Math.round(price));

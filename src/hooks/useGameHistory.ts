@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GameRecord } from '@/types/GameTypes';
 
 const GAME_HISTORY_KEY = 'crypto-game-history';
@@ -19,23 +19,35 @@ export const useGameHistory = () => {
     }
   }, []);
 
-  const saveGameRecord = (record: Omit<GameRecord, 'id'>) => {
+  const saveGameRecord = useCallback((record: Omit<GameRecord, 'id'>) => {
     const newRecord: GameRecord = {
       ...record,
       id: `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
 
-    const updatedHistory = [newRecord, ...gameHistory].slice(0, 50); // Keep last 50 games
-    setGameHistory(updatedHistory);
-    localStorage.setItem(GAME_HISTORY_KEY, JSON.stringify(updatedHistory));
-  };
+    setGameHistory(prevHistory => {
+      // 중복 방지: 같은 timestamp의 기록이 이미 있는지 확인
+      const isDuplicate = prevHistory.some(existing => 
+        Math.abs(existing.timestamp - newRecord.timestamp) < 1000 // 1초 이내 같은 기록 방지
+      );
+      
+      if (isDuplicate) {
+        console.log('Duplicate game record prevented');
+        return prevHistory;
+      }
+      
+      const updatedHistory = [newRecord, ...prevHistory].slice(0, 50); // Keep last 50 games
+      localStorage.setItem(GAME_HISTORY_KEY, JSON.stringify(updatedHistory));
+      return updatedHistory;
+    });
+  }, []);
 
-  const clearHistory = () => {
+  const clearHistory = useCallback(() => {
     setGameHistory([]);
     localStorage.removeItem(GAME_HISTORY_KEY);
-  };
+  }, []);
 
-  const getStatistics = () => {
+  const getStatistics = useCallback(() => {
     if (gameHistory.length === 0) {
       return {
         totalGames: 0,
@@ -61,7 +73,7 @@ export const useGameHistory = () => {
       totalTrades,
       averageTradesPerGame: totalTrades / gameHistory.length
     };
-  };
+  }, [gameHistory]);
 
   return {
     gameHistory,
