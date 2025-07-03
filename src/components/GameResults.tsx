@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trade } from '@/types/GameTypes';
 import { Trophy, Coffee, TrendingUp, TrendingDown, RotateCcw, Target, Flag } from 'lucide-react';
+import { useGameHistory } from '@/hooks/useGameHistory';
 
 interface GameResultsProps {
   finalValue: number;
@@ -12,6 +12,8 @@ interface GameResultsProps {
   trades: Trade[];
   onRestart: () => void;
   isGaveUp: boolean;
+  selectedDuration: number;
+  selectedCapital: number;
 }
 
 const GameResults: React.FC<GameResultsProps> = ({
@@ -20,8 +22,27 @@ const GameResults: React.FC<GameResultsProps> = ({
   profitLossPercent,
   trades,
   onRestart,
-  isGaveUp
+  isGaveUp,
+  selectedDuration,
+  selectedCapital
 }) => {
+  const { saveGameRecord } = useGameHistory();
+
+  // Save game record when component mounts
+  React.useEffect(() => {
+    saveGameRecord({
+      timestamp: Date.now(),
+      duration: selectedDuration,
+      initialCapital: selectedCapital,
+      finalValue,
+      profitLoss,
+      profitLossPercent,
+      trades,
+      isGaveUp,
+      gameEndTime: Date.now()
+    });
+  }, [saveGameRecord, selectedDuration, selectedCapital, finalValue, profitLoss, profitLossPercent, trades, isGaveUp]);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ko-KR').format(Math.round(price));
   };
@@ -145,14 +166,24 @@ const GameResults: React.FC<GameResultsProps> = ({
             </div>
           </div>
 
-          {/* Restart Button */}
-          <Button
-            onClick={onRestart}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 text-lg"
-          >
-            <RotateCcw className="w-5 h-5 mr-2" />
-            다시 도전하기
-          </Button>
+          {/* Buttons */}
+          <div className="flex gap-4">
+            <Button
+              onClick={onRestart}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 text-lg"
+            >
+              <RotateCcw className="w-5 h-5 mr-2" />
+              다시 도전하기
+            </Button>
+            
+            <Button
+              onClick={() => window.location.href = '/history'}
+              variant="outline"
+              className="flex-1 bg-white/10 border-white/20 text-white hover:bg-white/20 font-semibold py-3 text-lg"
+            >
+              게임 기록 보기
+            </Button>
+          </div>
 
           {/* Fun Message */}
           <p className="text-blue-200 text-sm">

@@ -59,6 +59,8 @@ const Index = () => {
         trades={portfolio.trades}
         onRestart={resetGame}
         isGaveUp={isGaveUp}
+        selectedDuration={selectedDuration}
+        selectedCapital={selectedCapital}
       />
     );
   }

@@ -1,4 +1,3 @@
-
 export interface CoinData {
   symbol: string;
   name: string;
@@ -64,3 +63,16 @@ export const createInitialPortfolio = (initialCapital: number): Portfolio => ({
   holdings: { BTC: 0, ETH: 0, DOGE: 0 },
   trades: []
 });
+
+export interface GameRecord {
+  id: string;
+  timestamp: number;
+  duration: number;
+  initialCapital: number;
+  finalValue: number;
+  profitLoss: number;
+  profitLossPercent: number;
+  trades: Trade[];
+  isGaveUp: boolean;
+  gameEndTime: number;
+}
