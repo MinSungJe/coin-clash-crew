@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import WaitingScreen from '@/components/WaitingScreen';
+import CountdownScreen from '@/components/CountdownScreen';
 import GameHeader from '@/components/GameHeader';
 import CryptoChart from '@/components/CryptoChart';
 import TradingPanel from '@/components/TradingPanel';
@@ -13,6 +15,7 @@ const Index = () => {
   
   const {
     gameState,
+    countdown,
     timeLeft,
     selectedCoin,
     setSelectedCoin,
@@ -48,6 +51,10 @@ const Index = () => {
         onStartGame={startGame}
       />
     );
+  }
+
+  if (gameState === 'countdown') {
+    return <CountdownScreen countdown={countdown} />;
   }
 
   if (gameState === 'finished') {

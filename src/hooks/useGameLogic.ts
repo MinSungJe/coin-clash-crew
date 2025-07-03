@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { CoinData, Portfolio, Trade, INITIAL_COINS, createInitialPortfolio } from '@/types/GameTypes';
 
 export const useGameLogic = (selectedDuration: number, initialCapital: number) => {
-  const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
+  const [gameState, setGameState] = useState<'waiting' | 'countdown' | 'playing' | 'finished'>('waiting');
+  const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(selectedDuration);
   const [selectedCoin, setSelectedCoin] = useState('BTC');
   const [portfolio, setPortfolio] = useState<Portfolio>(createInitialPortfolio(initialCapital));
@@ -13,6 +14,24 @@ export const useGameLogic = (selectedDuration: number, initialCapital: number) =
   useEffect(() => {
     setPortfolio(createInitialPortfolio(initialCapital));
   }, [initialCapital]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (gameState !== 'countdown') return;
+
+    const countdownTimer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          setGameState('playing');
+          setTimeLeft(selectedDuration);
+          return 3;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownTimer);
+  }, [gameState, selectedDuration]);
 
   // Mock real-time price updates
   useEffect(() => {
@@ -59,8 +78,8 @@ export const useGameLogic = (selectedDuration: number, initialCapital: number) =
   }, [gameState]);
 
   const startGame = () => {
-    setGameState('playing');
-    setTimeLeft(selectedDuration);
+    setGameState('countdown');
+    setCountdown(3);
     setPortfolio(createInitialPortfolio(initialCapital));
     setIsGaveUp(false);
     // Initialize chart data
@@ -80,6 +99,7 @@ export const useGameLogic = (selectedDuration: number, initialCapital: number) =
 
   const resetGame = () => {
     setGameState('waiting');
+    setCountdown(3);
     setTimeLeft(selectedDuration);
     setPortfolio(createInitialPortfolio(initialCapital));
     setIsGaveUp(false);
@@ -135,6 +155,7 @@ export const useGameLogic = (selectedDuration: number, initialCapital: number) =
 
   return {
     gameState,
+    countdown,
     timeLeft,
     selectedCoin,
     setSelectedCoin,
