@@ -53,10 +53,6 @@ const Index = () => {
     );
   }
 
-  if (gameState === 'countdown') {
-    return <CountdownScreen countdown={countdown} />;
-  }
-
   if (gameState === 'finished') {
     return (
       <GameResults 
@@ -72,8 +68,12 @@ const Index = () => {
     );
   }
 
+  // Show game screen for both countdown and playing states
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-4">
+      {/* Countdown Overlay */}
+      {gameState === 'countdown' && <CountdownScreen countdown={countdown} />}
+      
       <div className="max-w-6xl mx-auto space-y-4">
         {/* Header */}
         <GameHeader timeLeft={timeLeft} onGiveUp={handleGiveUp} />
