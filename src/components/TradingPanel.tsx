@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,13 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
   const [tradeAmount, setTradeAmount] = useState<number>(0);
   const [tradeValue, setTradeValue] = useState<number>(0);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [tradeMode, setTradeMode] = useState<'amount' | 'value'>('amount'); // 새로운 상태
+  const [tradeMode, setTradeMode] = useState<'amount' | 'value'>('amount');
+  
+  // Store previous values for each combination of trade type and mode
+  const [previousValues, setPreviousValues] = useState({
+    buy: { amount: 0, value: 0 },
+    sell: { amount: 0, value: 0 }
+  });
 
   const maxBuyAmount = Math.floor(portfolio.cash / selectedCoin.price * 100000) / 100000;
   const maxSellAmount = portfolio.holdings[selectedCoin.symbol] || 0;
@@ -28,6 +33,18 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
   const maxValue = tradeType === 'buy' ? maxBuyValue : maxSellValue;
   const calculatedTradeValue = tradeAmount * selectedCoin.price;
   const calculatedTradeAmount = tradeValue / selectedCoin.price;
+
+  // Update current values when trade type changes
+  useEffect(() => {
+    const prevAmount = previousValues[tradeType].amount;
+    const prevValue = previousValues[tradeType].value;
+    
+    if (tradeMode === 'amount' && prevAmount > 0) {
+      setTradeAmount(Math.min(prevAmount, maxAmount));
+    } else if (tradeMode === 'value' && prevValue > 0) {
+      setTradeValue(Math.min(prevValue, maxValue));
+    }
+  }, [tradeType, tradeMode, maxAmount, maxValue, previousValues]);
 
   const handleSliderChange = (value: number[]) => {
     const percentage = value[0];
@@ -52,14 +69,22 @@ const TradingPanel: React.FC<TradingPanelProps> = ({ selectedCoin, portfolio, on
       finalAmount = calculatedTradeAmount;
     }
     
+    // Store the current values before trading
+    setPreviousValues(prev => ({
+      ...prev,
+      [tradeType]: {
+        amount: tradeMode === 'amount' ? tradeAmount : calculatedTradeAmount,
+        value: tradeMode === 'value' ? tradeValue : calculatedTradeValue
+      }
+    }));
+    
     onTrade({
       type: tradeType,
       symbol: selectedCoin.symbol,
       amount: finalAmount
     });
     
-    setTradeAmount(0);
-    setTradeValue(0);
+    // Don't reset the values anymore - keep them for next trade
   };
 
   const formatPrice = (price: number) => {
